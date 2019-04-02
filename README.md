@@ -30,4 +30,3 @@ label har lengde begrensning 64 tegn.
 Algortime som tar docker url -> 64 tegn. 
 
 sha1 fungerer sha256 blir for langt
-
