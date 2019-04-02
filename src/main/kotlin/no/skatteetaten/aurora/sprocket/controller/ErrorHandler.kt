@@ -1,64 +1,35 @@
 package no.skatteetaten.aurora.sprocket.controller
 
-import org.springframework.web.reactive.function.client.ClientResponse
-import org.springframework.web.reactive.function.client.WebClientResponseException
-import reactor.core.publisher.Mono
-import reactor.core.publisher.toMono
-import java.time.Duration
+import mu.KotlinLogging
+import org.springframework.http.HttpHeaders
+import org.springframework.http.HttpStatus
+import org.springframework.http.MediaType
+import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.ControllerAdvice
+import org.springframework.web.bind.annotation.ExceptionHandler
+import org.springframework.web.context.request.WebRequest
+import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler
 
-private val blockTimeout: Long = 30
+private val logger = KotlinLogging.logger {}
 
-//TODO: trengs dette?
-fun <T> Mono<T>.blockAndHandleError(
-    duration: Duration = Duration.ofSeconds(blockTimeout),
-    sourceSystem: String? = null
-) =
-    this.handleError(sourceSystem).toMono().block(duration)
+@ControllerAdvice
+class ErrorHandler : ResponseEntityExceptionHandler() {
 
-fun <T> Mono<T>.handleError(sourceSystem: String?) =
-    this.doOnError {
-        when (it) {
-            is WebClientResponseException -> throw SourceSystemException(
-                message = "Error in response, status=${it.statusCode} message=${it.statusText}",
-                cause = it,
-                sourceSystem = sourceSystem
-            )
-            is SourceSystemException -> throw it
-            else -> throw SprocketException("Unknown error in response or request", it)
-        }
+    @ExceptionHandler(RuntimeException::class)
+    fun handleGenericError(e: RuntimeException, request: WebRequest): ResponseEntity<Any>? {
+        return handleException(e, request, HttpStatus.INTERNAL_SERVER_ERROR)
     }
 
-//TODO: dette trengs ikke
-fun ClientResponse.handleStatusCodeError(sourceSystem: String?) {
-
-    val statusCode = this.statusCode()
-
-    if (statusCode.is2xxSuccessful) {
-        return
+    @ExceptionHandler(NoSuchResourceException::class)
+    fun handleResourceNotFound(e: NoSuchResourceException, request: WebRequest): ResponseEntity<Any>? {
+        return handleException(e, request, HttpStatus.NOT_FOUND)
     }
 
-    val message = when {
-        statusCode.is4xxClientError -> {
-            when (statusCode.value()) {
-                404 -> "Resource could not be found"
-                400 -> "Invalid request"
-                403 -> "Forbidden"
-                else -> "There has occurred a client error"
-            }
-        }
-        statusCode.is5xxServerError -> {
-            when (statusCode.value()) {
-                500 -> "An internal server error has occurred in the docker registry"
-                else -> "A server error has occurred"
-            }
-        }
-
-        else ->
-            "Unknown error occurred"
+    private fun handleException(e: Exception, request: WebRequest, httpStatus: HttpStatus): ResponseEntity<Any>? {
+        val headers = HttpHeaders().apply { contentType = MediaType.APPLICATION_JSON }
+        logger.debug("Handle exception", e)
+        return handleExceptionInternal(e, e, headers, httpStatus, request)
     }
-
-    throw SourceSystemException(
-        message = "$message status=${statusCode.value()} message=${statusCode.reasonPhrase}",
-        sourceSystem = sourceSystem
-    )
 }
+
+class NoSuchResourceException(message: String) : RuntimeException(message)

@@ -25,13 +25,10 @@ plugins {
 apply(plugin = "spring-cloud-contract")
 
 dependencies {
-    implementation("uk.q3c.rest:hal-kotlin:0.5.4.0.db32476")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-slf4j:1.1.1")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.1.1")
-
     testImplementation("com.squareup.okhttp3:mockwebserver:3.13.1")
-
-    implementation("org.springframework.boot:spring-boot-starter-webflux")
+    
+    implementation("io.fabric8:openshift-client:4.1.3")
+    testImplementation("io.fabric8:openshift-server-mock:4.1.3")
     implementation("org.springframework.boot:spring-boot-starter-web")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
 
