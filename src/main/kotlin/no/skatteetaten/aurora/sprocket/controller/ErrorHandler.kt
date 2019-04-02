@@ -8,6 +8,7 @@ import java.time.Duration
 
 private val blockTimeout: Long = 30
 
+//TODO: trengs dette?
 fun <T> Mono<T>.blockAndHandleError(
     duration: Duration = Duration.ofSeconds(blockTimeout),
     sourceSystem: String? = null
@@ -27,6 +28,7 @@ fun <T> Mono<T>.handleError(sourceSystem: String?) =
         }
     }
 
+//TODO: dette trengs ikke
 fun ClientResponse.handleStatusCodeError(sourceSystem: String?) {
 
     val statusCode = this.statusCode()

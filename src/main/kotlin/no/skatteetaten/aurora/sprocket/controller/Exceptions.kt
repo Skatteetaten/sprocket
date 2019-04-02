@@ -1,5 +1,6 @@
 package no.skatteetaten.aurora.sprocket.controller
 
+// TODO: Noen trenger man kanskje for logging?
 class BadRequestException(
     message: String,
     cause: Throwable? = null

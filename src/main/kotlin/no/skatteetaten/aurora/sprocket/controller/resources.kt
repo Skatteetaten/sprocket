@@ -6,7 +6,8 @@ import org.springframework.stereotype.Component
 import uk.q3c.rest.hal.HalResource
 
 private val logger = KotlinLogging.logger {}
-
+// TODO: Trenger vi alt dette?
+// Tror ikke det, undersøker bruk av openshiftclient, evt kubernetes client
 sealed class Try<out A, out B> {
     class Success<A>(val value: A) : Try<A, Nothing>()
     class Failure<B>(val value: B) : Try<Nothing, B>()

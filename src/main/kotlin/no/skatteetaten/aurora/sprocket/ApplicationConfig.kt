@@ -42,7 +42,7 @@ class ApplicationConfig {
     @Bean
     fun threadPoolContext(@Value("\${sprocket.threadPoolSize:6}") threadPoolSize: Int) =
         newFixedThreadPoolContext(threadPoolSize, "sprocket")
-
+    //TODO: byttes ut med openshiftclient/kubernetesclient hvis mulig
     @Bean
     fun webClient(
         builder: WebClient.Builder,
