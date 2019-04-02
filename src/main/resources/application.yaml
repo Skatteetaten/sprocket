@@ -1,0 +1,44 @@
+info:
+    serviceLinks:
+        metrics: "{metricsHostname}/dashboard/db/openshift-project-spring-actuator-view?var-ds=openshift-{cluster}-ose&var-namespace={namespace}&var-app={name}"
+    podLinks:
+        metrics: "{metricsHostname}/dashboard/db/openshift-project-spring-actuator-view-instance?var-ds=openshift-{cluster}-ose&var-namespace={namespace}&var-app={name}&var-instance={podName}"
+
+spring:
+    profiles:
+        active: local
+
+logging:
+    level:
+        no.skatteetaten.aurora.sprocket: INFO
+        org:
+            hibernate: WARN
+            springframework: INFO
+            apache:
+                catalina: WARN
+                velocity: WARN
+
+---
+spring:
+    profiles: local
+
+sprocket:
+    username: sprocket
+    password: sprocket
+
+server:
+    port: 8090
+    max-http-header-size: 200000
+
+management:
+    server:
+        port: 8000
+
+logging:
+    pattern:
+        console: "%d [%-9.9thread] %highlight(%-5level) %cyan(%logger:%L) %X - %msg %n%rEx{full}"
+    # add mokey.openshift.token to ~/.spring-boot-devtools.properties
+
+---
+spring:
+    profiles: openshift
