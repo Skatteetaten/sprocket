@@ -19,7 +19,7 @@
     "audit": {
       "domain": "repository.asset",
       "type": "updated",
-      "context": "v2/sprocket-test/alpine-test2/manifests/sha256:d05ecd4520cab5d9e5d877595fb0532aadcd6c90f4bbc837bc11679f704c4c82",
+      "context": "v2/sprocket-test/alpine-test2/manifests/sha256:d05ecld4520cab5d9e5d877595fb0532aadcd6c90f4bbc837bc11679f704c4c82",
       "attributes": {
         "repository.name": "internal-hosted-binary",
         "format": "docker",
