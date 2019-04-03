@@ -14,15 +14,17 @@ class ImageChangeController {
 
     @RequestMapping("/global")
     fun logGlobalEvent(@RequestBody eventPayload: JsonNode) {
-        logger.info {
+        logger.error {
             jacksonObjectMapper().writeValueAsString(eventPayload)
         }
     }
 
     @RequestMapping("/repo")
     fun logRepositoryEvent(@RequestBody eventPayload: JsonNode) {
-        logger.info {
+        logger.error {
             jacksonObjectMapper().writeValueAsString(eventPayload)
         }
     }
+
+
 }
