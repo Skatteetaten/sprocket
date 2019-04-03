@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
-private val logger = KotlinLogging.logger{}
+private val logger = KotlinLogging.logger {}
 
 @RestController
 class ImageChangeController {
@@ -25,5 +25,4 @@ class ImageChangeController {
             jacksonObjectMapper().writeValueAsString(eventPayload)
         }
     }
-
 }
