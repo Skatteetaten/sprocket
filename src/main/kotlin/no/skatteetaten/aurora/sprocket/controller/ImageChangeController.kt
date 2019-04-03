@@ -19,7 +19,7 @@ class ImageChangeController {
         }
     }
 
-    @RequestMapping("/repogup")
+    @RequestMapping("/repo")
     fun logRepositoryEvent(@RequestBody eventPayload: JsonNode) {
         logger.info {
             jacksonObjectMapper().writeValueAsString(eventPayload)
