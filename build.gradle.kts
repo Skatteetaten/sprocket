@@ -29,6 +29,8 @@ dependencies {
     
     implementation("io.fabric8:openshift-client:4.1.3")
     testImplementation("io.fabric8:openshift-server-mock:4.1.3")
+    implementation("com.fkorotkov:kubernetes-dsl:1.2.1")
+
     implementation("org.springframework.boot:spring-boot-starter-web")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
 

@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 
-fun createObjectMapper() =
+val jsonMapper =
     jacksonObjectMapper().apply {
         configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
         configure(SerializationFeature.INDENT_OUTPUT, true)
