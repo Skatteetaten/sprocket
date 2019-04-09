@@ -30,31 +30,6 @@ class OpenShiftService(val client: DefaultOpenShiftClient) {
         return client.imageStreams().inAnyNamespace().withLabel("skatteetaten.no/sprocket", event.sha).list().items
     }
 
-    /*
-    fun findAffectedDeploymentConfigs(event:ImageChangeEvent) : List<DeploymentConfig> {
-        return client.deploymentConfigs().inAnyNamespace().withLabel("skatteetaten.no/sprocketSha", event.sha).list().items
-    }
-
-    fun startDeployment() : Boolean {
-        client.apps().deployments().inNamespace("foo").withName("asd").patch(
-            newDeployment {
-                metadata {
-                    labels= mapOf("skatteetaten.no/sprocketUpdated" to Instant.now().toString())
-                }
-            }
-        )
-        return true
-
-    }
-
-    fun startDeploymentConfig(dc:DeploymentConfig) : DeploymentConfig? {
-        //ConfigChangeTrigger er på
-        dc.metadata.labels["skatteetaten.no/sprocketUpdated"] = Instant.now().toString()
-        return client.deploymentConfigs().inNamespace("foo").withName("asd").patch(dc)
-    }
-
-     */
-
     fun importImage(event: ImageChangeEvent, imageStream: ImageStream): ImageStreamImport {
 
         val import = create(
@@ -69,10 +44,6 @@ class OpenShiftService(val client: DefaultOpenShiftClient) {
     }
 }
 
-/*
-{"kind":"ImageStreamImport","apiVersion":"image.openshift.io/v1","metadata":{"name":"reference","namespace":"demo-nexus","resourceVersion":"556120377","creationTimestamp":null},"spec":{"import":true,"images":[{"from":{"kind":"DockerImage","name":"utv-container-registry-internal-snapshot.aurora.skead.no:443/no_skatteetaten_aurora_openshift/openshift-reference-springboot-server"},"to":{"name":"latest"},"importPolicy":{},"referencePolicy":{"type":""}}]},"status":{}}
-
- */
 fun DefaultOpenShiftClient.importImage(import: ImageStreamImport): ImageStreamImport {
     val url =
         this.openshiftUrl.toURI()

@@ -5,4 +5,5 @@ open class SprocketException(
     cause: Throwable? = null
 ) : RuntimeException(message, cause)
 
+// TODO: Sprocket trenger kanskje ikke egne exceptions?
 open class RandomException(message: String, cause: Throwable? = null) : RuntimeException(message, cause)
