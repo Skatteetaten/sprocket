@@ -1,0 +1,27 @@
+[
+  {
+    "timestamp": "2019-04-03T08:52:11.335+0000",
+    "nodeId": "nodeid",
+    "initiator": "user/ip",
+    "repositoryName": "internal-hosted-binary",
+    "action": "CREATED",
+    "asset": {
+      "id": "d48117541dcb89ec8ddbc7822530b6ef",
+      "format": "docker",
+      "name": "v2/sprocket-test/alpine-test/manifests/sha256:d05ecd4520cab5d9e5d877595fb0532aadcd6c90f4bbc837bc11679f704c4c82"
+    }
+  },
+  {
+    "timestamp": "2019-04-03T08:52:11.337+0000",
+    "nodeId": "nodeid",
+    "initiator": "user/ip",
+    "repositoryName": "internal-hosted-binary",
+    "action": "CREATED",
+    "component": {
+      "id": "dfbef09efe1644ea519f10d005dd72f7",
+      "format": "docker",
+      "name": "sprocket-test/alpine-test",
+      "version": "0.1"
+    }
+  }
+]
