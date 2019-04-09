@@ -1,6 +1,10 @@
 package no.skatteetaten.aurora.sprocket.controller
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
+import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.module.kotlin.convertValue
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import mu.KotlinLogging
 import no.skatteetaten.aurora.sprocket.jsonMapper
 import no.skatteetaten.aurora.sprocket.service.OpenShiftService
@@ -8,6 +12,7 @@ import no.skatteetaten.aurora.utils.sha1
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
+import javax.servlet.http.HttpServletRequest
 
 private val logger = KotlinLogging.logger {}
 
@@ -15,8 +20,13 @@ private val logger = KotlinLogging.logger {}
 class ImageChangeController(val service: OpenShiftService) {
 
     @RequestMapping("/global")
-    fun logGlobalEvent(@RequestBody globalEventPayload: GlobalEventPayload) {
+    fun logGlobalEvent(@RequestBody jsonPayload: JsonNode, req: HttpServletRequest) {
+        logger.debug("body=$jsonPayload")
+        req.headerNames.toList().forEach {
+            logger.debug { "header=${req.getHeader(it)}" }
+        }
 
+        val globalEventPayload = jacksonObjectMapper().convertValue<GlobalEventPayload>(jsonPayload)
         logger.debug("Payload=$globalEventPayload")
         val imageInfo = globalEventPayload.audit.attributes ?: return
 
@@ -29,16 +39,20 @@ class ImageChangeController(val service: OpenShiftService) {
     }
 }
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 data class ImageInfo(
     val name: String?,
     val version: String?,
     @JsonProperty("repository.name") val repository: String??
 )
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 data class GlobalEventPayload(val audit: DockerAuditEvent)
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 data class DockerAuditEvent(val attributes: ImageInfo?)
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 data class ImageChangeEvent(
     val name: String,
     val tag: String,
