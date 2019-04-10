@@ -21,7 +21,7 @@ class ImageChangeController(val service: OpenShiftService) {
     @RequestMapping("/global")
     fun logGlobalEvent(@RequestBody jsonPayload: JsonNode, req: HttpServletRequest) {
 
-        if (jsonPayload.at("$.audit.domain").toString() != "repository.component") {
+        if (jsonPayload.at("/audit/domain").toString() != "repository.component") {
             return
         }
 
