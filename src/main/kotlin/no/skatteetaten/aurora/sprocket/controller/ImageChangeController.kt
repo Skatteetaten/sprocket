@@ -6,7 +6,6 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.module.kotlin.convertValue
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import mu.KotlinLogging
-import no.skatteetaten.aurora.sprocket.jsonMapper
 import no.skatteetaten.aurora.sprocket.service.OpenShiftService
 import no.skatteetaten.aurora.utils.sha1
 import org.springframework.web.bind.annotation.RequestBody
@@ -22,20 +21,26 @@ class ImageChangeController(val service: OpenShiftService) {
     @RequestMapping("/global")
     fun logGlobalEvent(@RequestBody jsonPayload: JsonNode, req: HttpServletRequest) {
         logger.debug("body=$jsonPayload")
-        req.headerNames.toList().forEach {
-            logger.debug { "header=${req.getHeader(it)}" }
+        val headers = req.headerNames.toList().associate {
+            it to req.getHeader(it)
         }
+        val headersJson = jacksonObjectMapper().valueToTree<JsonNode>(headers).toString()
+        logger.debug("header=$headersJson")
 
-        val globalEventPayload = jacksonObjectMapper().convertValue<GlobalEventPayload>(jsonPayload)
-        logger.debug("Payload=$globalEventPayload")
+        val globalEventPayload = try {
+            jacksonObjectMapper().convertValue<GlobalEventPayload>(jsonPayload)
+        } catch (e: Exception) {
+            return
+        }
+        // logger.debug("Payload=$globalEventPayload")
         val imageInfo = globalEventPayload.audit.attributes ?: return
 
         val imageChangeEvent = ImageChangeEvent.create(imageInfo) ?: return
-        logger.info("{} url={} sha={}", imageChangeEvent, imageChangeEvent.url, imageChangeEvent.sha)
+        // logger.info("{} url={} sha={}", imageChangeEvent, imageChangeEvent.url, imageChangeEvent.sha)
         val results = service.findAffectedImageStreamResource(imageChangeEvent).map {
             service.importImage(imageChangeEvent, it)
         }
-        results.forEach { logger.info("response=${jsonMapper.writeValueAsString(it)}") }
+        // results.forEach { logger.info("response=${jsonMapper.writeValueAsString(it)}") }
     }
 }
 
@@ -43,7 +48,7 @@ class ImageChangeController(val service: OpenShiftService) {
 data class ImageInfo(
     val name: String?,
     val version: String?,
-    @JsonProperty("repository.name") val repository: String??
+    @JsonProperty("repository.name") val repository: String?
 )
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -52,7 +57,6 @@ data class GlobalEventPayload(val audit: DockerAuditEvent)
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class DockerAuditEvent(val attributes: ImageInfo?)
 
-@JsonIgnoreProperties(ignoreUnknown = true)
 data class ImageChangeEvent(
     val name: String,
     val tag: String,
