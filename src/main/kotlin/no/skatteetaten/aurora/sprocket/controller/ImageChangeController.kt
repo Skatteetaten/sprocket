@@ -20,12 +20,16 @@ class ImageChangeController(val service: OpenShiftService) {
 
     @RequestMapping("/global")
     fun logGlobalEvent(@RequestBody jsonPayload: JsonNode, req: HttpServletRequest) {
-        logger.debug("body=$jsonPayload")
+
+        if (jsonPayload.at("$.audit.domain").toString() != "repository.component") {
+            return
+        }
+
         val headers = req.headerNames.toList().associate {
             it to req.getHeader(it)
         }
         val headersJson = jacksonObjectMapper().valueToTree<JsonNode>(headers).toString()
-        logger.debug("header=$headersJson")
+        logger.debug("header=$headersJson, body=$jsonPayload")
 
         val globalEventPayload = try {
             jacksonObjectMapper().convertValue<GlobalEventPayload>(jsonPayload)
