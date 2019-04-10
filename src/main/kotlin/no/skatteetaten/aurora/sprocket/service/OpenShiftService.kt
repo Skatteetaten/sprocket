@@ -26,7 +26,7 @@ class OpenShiftService(val client: DefaultOpenShiftClient) {
 
     fun findAffectedImageStreamResource(event: ImageChangeEvent): List<ImageStream> {
 
-        logger.info("Searching for imagestreams with sprocket=${event.sha}")
+        // logger.info("Searching for imagestreams with sprocket=${event.sha}")
         return client.imageStreams().inAnyNamespace().withLabel("skatteetaten.no/sprocket", event.sha).list().items
     }
 
@@ -39,7 +39,7 @@ class OpenShiftService(val client: DefaultOpenShiftClient) {
             tag = "default" // because binary
         )
 
-        logger.debug("Importing image with spec=$import")
+        // logger.debug("Importing image with spec=$import")
         return client.importImage(import)
     }
 }
@@ -48,11 +48,11 @@ fun DefaultOpenShiftClient.importImage(import: ImageStreamImport): ImageStreamIm
     val url =
         this.openshiftUrl.toURI()
             .resolve("/apis/image.openshift.io/v1/namespaces/${import.metadata.namespace}/imagestreamimports")
-    logger.debug("Requesting url={}", url)
+    // logger.debug("Requesting url={}", url)
     return try {
 
         val body = jsonMapper.writeValueAsString(import)
-        logger.debug("body=$body")
+        // logger.debug("body=$body")
         val json = MediaType.get("application/json; charset=utf-8")
         val request = Request.Builder()
             .url(url.toString())
