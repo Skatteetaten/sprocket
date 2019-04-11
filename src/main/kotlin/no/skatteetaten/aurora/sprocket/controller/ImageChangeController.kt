@@ -5,10 +5,16 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.module.kotlin.convertValue
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.fasterxml.jackson.module.kotlin.readValue
 import mu.KotlinLogging
+import no.skatteetaten.aurora.sprocket.jsonMapper
 import no.skatteetaten.aurora.sprocket.service.OpenShiftService
 import no.skatteetaten.aurora.utils.sha1
-import org.springframework.web.bind.annotation.RequestBody
+import org.apache.commons.codec.digest.DigestUtils
+import org.apache.commons.codec.digest.HmacAlgorithms
+import org.apache.commons.codec.digest.HmacUtils
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import javax.servlet.http.HttpServletRequest
@@ -16,20 +22,34 @@ import javax.servlet.http.HttpServletRequest
 private val logger = KotlinLogging.logger {}
 
 @RestController
-class ImageChangeController(val service: OpenShiftService) {
+class ImageChangeController(
+    val service: OpenShiftService,
+    @Value("\${sprocket.nexus.nodeId}") val nodeId: String
+) {
 
     @RequestMapping("/global")
-    fun logGlobalEvent(@RequestBody jsonPayload: JsonNode, req: HttpServletRequest) {
+    fun logGlobalEvent(
+        @RequestHeader(value = "x-nexus-webhook-signature", required = true) signature: String,
+        @Value("\${sprocket.nexus.secret:123456}") secretKey: String,
+        request: HttpServletRequest
+    ) {
 
-        if (jsonPayload.at("/audit/domain").toString() != "repository.component") {
+        val body = request.inputStream.readAllBytes()
+        val jsonPayload: JsonNode = jsonMapper.readValue(body)
+
+        if (jsonPayload.at("/audit/domain").textValue() != "repository.component") {
             return
         }
 
-        val headers = req.headerNames.toList().associate {
-            it to req.getHeader(it)
+        // spring security.
+        if (jsonPayload.at("/nodeId").textValue() != nodeId) {
+            return
         }
-        val headersJson = jacksonObjectMapper().valueToTree<JsonNode>(headers).toString()
-        logger.debug("header=$headersJson, body=$jsonPayload")
+        val hmac = HmacUtils(HmacAlgorithms.HMAC_SHA_1, secretKey).hmacHex(body)
+        logger.debug(signature)
+        logger.debug(hmac)
+        logger.debug("body=$jsonPayload")
+        // end spring security
 
         val globalEventPayload = try {
             jacksonObjectMapper().convertValue<GlobalEventPayload>(jsonPayload)
@@ -68,6 +88,9 @@ data class ImageChangeEvent(
 ) {
 
     val sha: String
+        get() = "sha1-${DigestUtils.sha1Hex(url)}"
+
+    val sha_old: String
         get() = "sha1-${url.sha1()}"
 
     val url: String

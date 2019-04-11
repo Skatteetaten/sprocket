@@ -42,3 +42,8 @@ logging:
 ---
 spring:
     profiles: openshift
+
+sprocket:
+    nexus:
+        nodeId: "87195F54-0A8D5455-B0749167-0C6F8C2A-0DA78898"
+        secret: "123456"

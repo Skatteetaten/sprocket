@@ -26,8 +26,11 @@ class OpenShiftService(val client: DefaultOpenShiftClient) {
 
     fun findAffectedImageStreamResource(event: ImageChangeEvent): List<ImageStream> {
 
-        // logger.info("Searching for imagestreams with sprocket=${event.sha}")
-        return client.imageStreams().inAnyNamespace().withLabel("skatteetaten.no/sprocket", event.sha).list().items
+        logger.debug("Searching for imagestreams with sprocket=${event.sha} url=${event.url}")
+        return client.imageStreams().inAnyNamespace().withLabel("skatteetaten.no/sprocket", event.sha).list()
+            .items.also {
+            logger.debug("Found items={} imagestreams", it.count())
+        }
     }
 
     fun importImage(event: ImageChangeEvent, imageStream: ImageStream): ImageStreamImport {

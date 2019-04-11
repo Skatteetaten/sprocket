@@ -26,7 +26,8 @@ apply(plugin = "spring-cloud-contract")
 
 dependencies {
     testImplementation("com.squareup.okhttp3:mockwebserver:3.13.1")
-    
+
+    implementation("commons-codec:commons-codec:1.12")
     implementation("io.fabric8:openshift-client:4.1.3")
     testImplementation("io.fabric8:openshift-server-mock:4.1.3")
     implementation("com.fkorotkov:kubernetes-dsl:1.2.1")
