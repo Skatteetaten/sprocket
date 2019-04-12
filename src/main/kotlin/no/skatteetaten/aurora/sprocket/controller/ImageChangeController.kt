@@ -5,58 +5,36 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.module.kotlin.convertValue
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
 import mu.KotlinLogging
-import no.skatteetaten.aurora.sprocket.jsonMapper
 import no.skatteetaten.aurora.sprocket.service.OpenShiftService
 import no.skatteetaten.aurora.utils.sha1
 import org.apache.commons.codec.digest.DigestUtils
-import org.apache.commons.codec.digest.HmacAlgorithms
-import org.apache.commons.codec.digest.HmacUtils
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.web.bind.annotation.RequestHeader
+import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
-import javax.servlet.http.HttpServletRequest
 
 private val logger = KotlinLogging.logger {}
 
 @RestController
 class ImageChangeController(
-    val service: OpenShiftService,
-    @Value("\${sprocket.nexus.nodeId}") val nodeId: String
+    val service: OpenShiftService
 ) {
 
     @RequestMapping("/global")
     fun logGlobalEvent(
-        @RequestHeader(value = "x-nexus-webhook-signature", required = true) signature: String,
-        @Value("\${sprocket.nexus.secret:123456}") secretKey: String,
-        request: HttpServletRequest
+        @RequestBody(required = true) jsonPayload: JsonNode
     ) {
-
-        val body = request.inputStream.readAllBytes()
-        val jsonPayload: JsonNode = jsonMapper.readValue(body)
-
         if (jsonPayload.at("/audit/domain").textValue() != "repository.component") {
             return
         }
-
-        // spring security.
-        if (jsonPayload.at("/nodeId").textValue() != nodeId) {
-            return
-        }
-        val hmac = HmacUtils(HmacAlgorithms.HMAC_SHA_1, secretKey).hmacHex(body)
-        logger.debug(signature)
-        logger.debug(hmac)
-        logger.debug("body=$jsonPayload")
-        // end spring security
 
         val globalEventPayload = try {
             jacksonObjectMapper().convertValue<GlobalEventPayload>(jsonPayload)
         } catch (e: Exception) {
             return
         }
-        // logger.debug("Payload=$globalEventPayload")
+        logger.debug("Payload=$globalEventPayload")
         val imageInfo = globalEventPayload.audit.attributes ?: return
 
         val imageChangeEvent = ImageChangeEvent.create(imageInfo) ?: return
