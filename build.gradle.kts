@@ -26,13 +26,17 @@ apply(plugin = "spring-cloud-contract")
 
 dependencies {
     testImplementation("com.squareup.okhttp3:mockwebserver:3.13.1")
-    
+
+    implementation("commons-codec:commons-codec:1.12")
     implementation("io.fabric8:openshift-client:4.1.3")
     testImplementation("io.fabric8:openshift-server-mock:4.1.3")
     implementation("com.fkorotkov:kubernetes-dsl:1.2.1")
 
+
+    implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-web")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation("org.springframework.security:spring-security-test")
 
     testImplementation("io.mockk:mockk:1.9.2")
     testImplementation("com.willowtreeapps.assertk:assertk-jvm:0.13")
