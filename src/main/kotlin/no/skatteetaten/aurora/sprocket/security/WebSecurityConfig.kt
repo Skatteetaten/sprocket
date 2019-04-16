@@ -1,7 +1,6 @@
 package no.skatteetaten.aurora.sprocket.security
 
 import mu.KotlinLogging
-import no.skatteetaten.aurora.sprocket.jsonMapper
 import org.apache.commons.codec.digest.HmacAlgorithms
 import org.apache.commons.codec.digest.HmacUtils
 import org.springframework.beans.factory.annotation.Value
@@ -55,7 +54,7 @@ class SignatureHeaderFilter(val secretKey: String) : OncePerRequestFilter() {
             val hmac = HmacUtils(HmacAlgorithms.HMAC_SHA_1, secretKey).hmacHex(body)
 
             if (signature != hmac) {
-                response.sendError(403, "Forbidden operation")
+                response.sendError(403, "Forbidden operation. HMAC mismatch")
                 return
             }
         }

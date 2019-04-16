@@ -42,7 +42,7 @@ class OpenShiftService(val client: DefaultOpenShiftClient) {
             tag = "default" // because binary
         )
 
-        // logger.debug("Importing image with spec=$import")
+        logger.debug("Importing image with spec=$import")
         return client.importImage(import)
     }
 }
