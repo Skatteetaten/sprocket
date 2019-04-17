@@ -1,26 +1,29 @@
 package no.skatteetaten.aurora.sprocket.security
 
-import mu.KotlinLogging
-import org.apache.commons.codec.digest.HmacAlgorithms
+import no.skatteetaten.aurora.io.CachingRequestWrapper
 import org.apache.commons.codec.digest.HmacUtils
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
 import org.springframework.security.web.util.matcher.RequestMatcher
 import org.springframework.web.filter.OncePerRequestFilter
-import org.springframework.web.util.ContentCachingRequestWrapper
 import javax.servlet.FilterChain
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
+import org.springframework.security.core.context.SecurityContextHolder
+import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken
 
-private val logger = KotlinLogging.logger {}
 
+
+val NEXUS_SECURITY_HEADER = "x-nexus-webhook-signature"
+
+// https://github.com/kpavlov/spring-hmac-rest/blob/master/src/main/java/com/github/kpavlov/restws/server/hmac/HmacAuthenticationFilter.java
 @EnableWebSecurity
 class WebSecurityConfig(
-    @Value("\${management.server.port}") val managementPort: Int,
-    @Value("\${sprocket.nexus.secret:123456}") val secretKey: String
+    val hmacUtils: HmacUtils
 ) : WebSecurityConfigurerAdapter() {
 
     override fun configure(http: HttpSecurity) {
@@ -28,35 +31,48 @@ class WebSecurityConfig(
         http.csrf().disable()
 
         http
-            .addFilterBefore(SignatureHeaderFilter(secretKey), UsernamePasswordAuthenticationFilter::class.java)
+            .addFilterBefore(SignatureHeaderFilter(hmacUtils), UsernamePasswordAuthenticationFilter::class.java)
             .authorizeRequests()
-            .requestMatchers(forPort(managementPort)).permitAll()
+            .antMatchers("/nexus/**").authenticated()
+            .anyRequest().permitAll()
     }
 
-    private fun forPort(port: Int) = RequestMatcher { request: HttpServletRequest -> port == request.localPort }
 }
 
-class SignatureHeaderFilter(val secretKey: String) : OncePerRequestFilter() {
+class SignatureHeaderFilter(private val hmacUtils: HmacUtils) : OncePerRequestFilter() {
 
     override fun doFilterInternal(
         request: HttpServletRequest,
         response: HttpServletResponse,
         filterChain: FilterChain
     ) {
-        val signature = request.getHeader("x-nexus-webhook-signature") ?: return
+        val signature = request.getHeader(NEXUS_SECURITY_HEADER)
+        if (signature == null) {
+            logger.debug("signature missing, we do not run this filter")
+            filterChain.doFilter(request, response)
+            return
+        }
+        val requestWrapper = CachingRequestWrapper(request)
+        val body = requestWrapper.contentAsByteArray
 
-        val requestWrapper = ContentCachingRequestWrapper(request)
+        val hmac = hmacUtils.hmacHex(body)
+
+        if (signature != hmac) {
+            throw BadCredentialsException("HmacAccessFilter.badSignature")
+        }
+
+        val authentication = PreAuthenticatedAuthenticationToken("nexus", null, listOf())
+
+        SecurityContextHolder.getContext().authentication = authentication
         try {
             filterChain.doFilter(requestWrapper, response)
         } finally {
-            val body = requestWrapper.inputStream
-
-            val hmac = HmacUtils(HmacAlgorithms.HMAC_SHA_1, secretKey).hmacHex(body)
-
-            if (signature != hmac) {
-                response.sendError(403, "Forbidden operation. HMAC mismatch")
-                return
-            }
+            SecurityContextHolder.clearContext()
         }
+        logger.debug("Authenticated")
+
+        filterChain.doFilter(requestWrapper, response)
     }
 }
+
+

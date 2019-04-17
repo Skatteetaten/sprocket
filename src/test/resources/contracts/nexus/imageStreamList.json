@@ -1,0 +1,50 @@
+[
+  {
+    "apiVersion": "image.openshift.io/v1",
+    "kind": "ImageStream",
+    "metadata": {
+      "labels": {
+        "skatteetaten.no/sprocket": "sha1-712ced82fa68317071b5524f0f331a89056eb531",
+        "affiliation": "aurora"
+      },
+      "name": "test1",
+      "namespace": "aurora-test"
+    },
+    "spec": {
+      "dockerImageRepository": "test.container.registry:443/no_skatteetaten_aurora/test",
+      "tags": [
+        {
+          "from": {
+            "kind": "DockerImage",
+            "name": "test.container.registry:443/no_skatteetaten_aurora/test:1"
+          },
+          "name": "default"
+        }
+      ]
+    }
+  },
+  {
+    "apiVersion": "image.openshift.io/v1",
+    "kind": "ImageStream",
+    "metadata": {
+      "labels": {
+        "skatteetaten.no/sprocket": "sha1-712ced82fa68317071b5524f0f331a89056eb531",
+        "affiliation": "aurora"
+      },
+      "name": "test2",
+      "namespace": "aurora-test"
+    },
+    "spec": {
+      "dockerImageRepository": "test.container.registry:443/no_skatteetaten_aurora/test",
+      "tags": [
+        {
+          "from": {
+            "kind": "DockerImage",
+            "name": "test.container.registry:443/no_skatteetaten_aurora/test:1"
+          },
+          "name": "default"
+        }
+      ]
+    }
+  }
+]

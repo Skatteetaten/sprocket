@@ -11,8 +11,8 @@ import io.fabric8.openshift.api.model.ImageStream
 import io.fabric8.openshift.api.model.ImageStreamImport
 import io.fabric8.openshift.client.DefaultOpenShiftClient
 import mu.KotlinLogging
-import no.skatteetaten.aurora.sprocket.controller.ImageChangeEvent
 import no.skatteetaten.aurora.sprocket.jsonMapper
+import no.skatteetaten.aurora.sprocket.models.ImageChangeEvent
 import no.skatteetaten.aurora.sprocket.service.ImageStreamImportGenerator.create
 import okhttp3.MediaType
 import okhttp3.Request
@@ -39,7 +39,8 @@ class OpenShiftService(val client: DefaultOpenShiftClient) {
             dockerImageUrl = event.url,
             imageStreamName = imageStream.metadata.name,
             isiNamespace = imageStream.metadata.namespace,
-            tag = "default" // because binary
+            // TODO: Parameterize
+            tag = "default"
         )
 
         logger.debug("Importing image with spec=$import")

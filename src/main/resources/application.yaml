@@ -13,7 +13,7 @@ logging:
         no.skatteetaten.aurora.sprocket: DEBUG
         org:
             hibernate: WARN
-            springframework: INFO
+            springframework: WARN
             apache:
                 catalina: WARN
                 velocity: WARN
@@ -22,17 +22,10 @@ logging:
 spring:
     profiles: local
 
-sprocket:
-    username: sprocket
-    password: sprocket
-
-server:
-    port: 8090
-    max-http-header-size: 200000
 
 management:
     server:
-        port: 8000
+        port: 8081
 
 logging:
     pattern:
@@ -45,5 +38,4 @@ spring:
 
 sprocket:
     nexus:
-        nodeId: "87195F54-0A8D5455-B0749167-0C6F8C2A-0DA78898"
         secret: "123456"

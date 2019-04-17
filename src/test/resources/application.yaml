@@ -10,3 +10,7 @@ logging:
 
     pattern:
         console: "%d [%thread] %-5level %logger:%L %X - %msg %n%rEx{full}"
+
+management:
+    server:
+       port: 0
