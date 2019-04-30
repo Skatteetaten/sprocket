@@ -2,6 +2,21 @@
 
 Sprocket is a fraggle that listens to changes in docker registry and triggers new deploys if there are any changes
 
+ ## Setup
+ 
+ In order to use this project you must set repositories in your `~/.gradle/init.gradle` file
+ 
+     allprojects {
+         ext.repos= {
+             mavenCentral()
+             jcenter()
+         }
+         repositories repos
+         buildscript {
+          repositories repos
+         }
+     }
+
 // TODO:
 
  - endepunkt for å ta i mot docker event
