@@ -14,8 +14,6 @@ plugins {
     id("no.skatteetaten.gradle.aurora") version "2.3.1"
 }
 
-apply(plugin = "spring-cloud-contract")
-
 dependencies {
     testImplementation("com.squareup.okhttp3:mockwebserver:3.14.1")
 
