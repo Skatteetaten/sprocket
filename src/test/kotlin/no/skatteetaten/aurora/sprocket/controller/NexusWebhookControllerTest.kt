@@ -7,11 +7,11 @@ import no.skatteetaten.aurora.mockmvc.extensions.contentTypeJson
 import no.skatteetaten.aurora.mockmvc.extensions.header
 import no.skatteetaten.aurora.mockmvc.extensions.mock.withContractResponse
 import no.skatteetaten.aurora.mockmvc.extensions.post
-import no.skatteetaten.aurora.mockmvc.extensions.responseJsonPath
 import no.skatteetaten.aurora.mockmvc.extensions.status
 import no.skatteetaten.aurora.mockmvc.extensions.statusIsOk
 import no.skatteetaten.aurora.sprocket.ApplicationConfig
 import no.skatteetaten.aurora.sprocket.security.NEXUS_SECURITY_HEADER
+import no.skatteetaten.aurora.sprocket.service.ImageChangeEventService
 import no.skatteetaten.aurora.sprocket.service.OpenShiftService
 import no.skatteetaten.aurora.sprocket.utils.ResourceLoader
 import org.junit.jupiter.api.Test
@@ -26,7 +26,9 @@ import org.springframework.test.web.servlet.MockMvc
 
 @AutoConfigureRestDocs
 @WebMvcTest(
-    value = [NexusWebhookController::class, ApplicationConfig::class],
+    value = [NexusWebhookController::class,
+        ApplicationConfig::class,
+        ImageChangeEventService::class],
     secure = true
 )
 class ApplicationDeploymentControllerTest(
@@ -39,14 +41,14 @@ class ApplicationDeploymentControllerTest(
     @Test
     fun `post event with invalid hmac should fail`() {
 
-        mockMvc.post(
-            path = Path("/nexus/global"),
-            headers = HttpHeaders().contentTypeJson()
-                .header(NEXUS_SECURITY_HEADER, "LukeSkywalker"),
-            body = loadJsonResource<JsonNode>("globalNexus.json", "events")
-        ) {
-            status(HttpStatus.FORBIDDEN)
-        }
+            mockMvc.post(
+                path = Path("/nexus/global"),
+                headers = HttpHeaders().contentTypeJson()
+                    .header(NEXUS_SECURITY_HEADER, "LukeSkywalker"),
+                body = loadJsonResource<JsonNode>("globalNexus.json", "events")
+            ) {
+                status(HttpStatus.FORBIDDEN)
+            }
     }
 
     @Test
@@ -68,7 +70,7 @@ class ApplicationDeploymentControllerTest(
         mockMvc.post(
             path = Path("/nexus/global"),
             headers = HttpHeaders().contentTypeJson()
-                .header(NEXUS_SECURITY_HEADER, "132b81d03661015de288f26d0145c866680eb5a9"),
+                .header(NEXUS_SECURITY_HEADER, "0385d9e7e3320bfe348d7e53a6123e1a8c9e2324"),
             body = loadJsonResource<JsonNode>("globalNexus.json", "events")
         ) {
             statusIsOk()

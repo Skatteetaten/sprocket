@@ -2,23 +2,20 @@ package no.skatteetaten.aurora.sprocket.security
 
 import no.skatteetaten.aurora.io.CachingRequestWrapper
 import org.apache.commons.codec.digest.HmacUtils
-import org.springframework.beans.factory.annotation.Value
-import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter
+import org.springframework.security.core.authority.SimpleGrantedAuthority
+import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
-import org.springframework.security.web.util.matcher.RequestMatcher
+import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken
 import org.springframework.web.filter.OncePerRequestFilter
 import javax.servlet.FilterChain
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
-import org.springframework.security.core.context.SecurityContextHolder
-import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken
-
-
 
 val NEXUS_SECURITY_HEADER = "x-nexus-webhook-signature"
+val NEXUS_AUTHORITY = "NEXUS"
 
 // https://github.com/kpavlov/spring-hmac-rest/blob/master/src/main/java/com/github/kpavlov/restws/server/hmac/HmacAuthenticationFilter.java
 @EnableWebSecurity
@@ -31,15 +28,14 @@ class WebSecurityConfig(
         http.csrf().disable()
 
         http
-            .addFilterBefore(SignatureHeaderFilter(hmacUtils), UsernamePasswordAuthenticationFilter::class.java)
+            .addFilterBefore(NexusWebhookSignatureFilter(hmacUtils), UsernamePasswordAuthenticationFilter::class.java)
             .authorizeRequests()
-            .antMatchers("/nexus/**").authenticated()
+            .antMatchers("/nexus/**").hasAuthority(NEXUS_AUTHORITY)
             .anyRequest().permitAll()
     }
-
 }
 
-class SignatureHeaderFilter(private val hmacUtils: HmacUtils) : OncePerRequestFilter() {
+class NexusWebhookSignatureFilter(private val hmacUtils: HmacUtils) : OncePerRequestFilter() {
 
     override fun doFilterInternal(
         request: HttpServletRequest,
@@ -57,21 +53,18 @@ class SignatureHeaderFilter(private val hmacUtils: HmacUtils) : OncePerRequestFi
 
         val hmac = hmacUtils.hmacHex(body)
 
-        if (signature != hmac) {
-            throw BadCredentialsException("HmacAccessFilter.badSignature")
+        if (signature == hmac) {
+            val authentication =
+                PreAuthenticatedAuthenticationToken("nexus", signature, listOf(SimpleGrantedAuthority(NEXUS_AUTHORITY)))
+            SecurityContextHolder.getContext().authentication = authentication
         }
+        // If signature does not match we do not have a valid user.
 
-        val authentication = PreAuthenticatedAuthenticationToken("nexus", null, listOf())
-
-        SecurityContextHolder.getContext().authentication = authentication
         try {
             filterChain.doFilter(requestWrapper, response)
         } finally {
             SecurityContextHolder.clearContext()
         }
-        logger.debug("Authenticated")
-
-        filterChain.doFilter(requestWrapper, response)
     }
 }
 

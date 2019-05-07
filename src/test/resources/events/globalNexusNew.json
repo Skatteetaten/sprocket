@@ -4,11 +4,12 @@
   "audit": {
     "domain": "repository.component",
     "type": "created",
-    "context": "v2/no_skatteetaten_aurora/test/manifests/1",
+    "context": "sprocket-test/alpine-test2",
     "attributes": {
       "repository.name": "internal-hosted-binary",
       "format": "docker",
-      "name": "v2/no_skatteetaten_aurora/test/manifests/1"
+      "name": "sprocket-test/alpine-test2",
+      "version": "0.2"
     }
   }
 }
