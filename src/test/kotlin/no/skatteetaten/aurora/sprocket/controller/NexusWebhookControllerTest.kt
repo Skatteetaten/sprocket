@@ -31,7 +31,7 @@ import org.springframework.test.web.servlet.MockMvc
         ImageChangeEventService::class],
     secure = true
 )
-class ApplicationDeploymentControllerTest(
+class NexusWebhookControllerTest(
     @Autowired private val mockMvc: MockMvc
 ) : ResourceLoader() {
 
@@ -65,7 +65,6 @@ class ApplicationDeploymentControllerTest(
         ).withContractResponse("import", "openshift") {
             willReturn(content)
         }
-
 
         mockMvc.post(
             path = Path("/nexus/global"),

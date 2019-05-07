@@ -31,7 +31,6 @@ class ImageChangeEventService {
     }
 }
 
-
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class GlobalEventPayload(val audit: DockerAuditEvent)
 
@@ -46,7 +45,7 @@ data class ImageInfo(
 )
 
 fun ImageInfo.toChangeEvent(): ImageChangeEvent? {
-    //TODO: Is this dead code? Not tested for now, want to investigate
+    // TODO: Is this dead code? Not tested for now, want to investigate
     if (this.name == null || this.name.contains("sha256")) {
         return null
     }

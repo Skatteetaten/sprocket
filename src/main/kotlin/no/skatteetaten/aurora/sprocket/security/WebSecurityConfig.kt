@@ -67,5 +67,3 @@ class NexusWebhookSignatureFilter(private val hmacUtils: HmacUtils) : OncePerReq
         }
     }
 }
-
-

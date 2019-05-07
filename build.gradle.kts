@@ -1,6 +1,6 @@
 buildscript {
     dependencies {
-        //must specify this in gradle.properties since the same version must be here and in aurora plugin
+        // must specify this in gradle.properties since the same version must be here and in aurora plugin
         val springCloudContractVersion: String = project.property("aurora.springCloudContractVersion") as String
         classpath("org.springframework.cloud:spring-cloud-contract-gradle-plugin:$springCloudContractVersion")
     }
@@ -19,7 +19,6 @@ plugins {
     id("se.patrikerdes.use-latest-versions") version "0.2.9"
 
     id("no.skatteetaten.gradle.aurora") version "2.3.0"
-
 }
 
 apply(plugin = "spring-cloud-contract")

@@ -22,15 +22,12 @@ open class ResourceLoader {
         return ResourceUtils.getURL(path)
     }
 
-
-    inline fun <reified T>loadJsonResource(resourceName: String, folder: String = "${this.javaClass.`package`.name}/${this.javaClass.simpleName}"): T =
+    inline fun <reified T> loadJsonResource(resourceName: String, folder: String = "${this.javaClass.`package`.name}/${this.javaClass.simpleName}"): T =
         jacksonObjectMapper().readValue(loadResource(resourceName, folder))
 
     fun loadByteResource(resourceName: String, folder: String = this.javaClass.simpleName): ByteArray {
         return getResourceUrl(resourceName, folder).openStream().readBytes()
     }
-
-
 
     fun loadStreamResource(resourceName: String, folder: String = "${this.javaClass.`package`.name}/${this.javaClass.simpleName}"): InputStream? {
         return getResourceUrl(resourceName, folder).openStream()
