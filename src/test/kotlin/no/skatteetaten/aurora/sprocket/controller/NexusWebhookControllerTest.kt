@@ -1,6 +1,7 @@
 package no.skatteetaten.aurora.sprocket.controller
 
 import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.nhaarman.mockito_kotlin.any
 import no.skatteetaten.aurora.mockmvc.extensions.Path
 import no.skatteetaten.aurora.mockmvc.extensions.contentTypeJson
@@ -10,10 +11,13 @@ import no.skatteetaten.aurora.mockmvc.extensions.post
 import no.skatteetaten.aurora.mockmvc.extensions.status
 import no.skatteetaten.aurora.mockmvc.extensions.statusIsOk
 import no.skatteetaten.aurora.sprocket.ApplicationConfig
+import no.skatteetaten.aurora.sprocket.jsonMapper
 import no.skatteetaten.aurora.sprocket.security.NEXUS_SECURITY_HEADER
 import no.skatteetaten.aurora.sprocket.service.ImageChangeEventService
 import no.skatteetaten.aurora.sprocket.service.OpenShiftService
 import no.skatteetaten.aurora.sprocket.utils.ResourceLoader
+import org.apache.commons.codec.digest.HmacAlgorithms
+import org.apache.commons.codec.digest.HmacUtils
 import org.junit.jupiter.api.Test
 import org.mockito.BDDMockito.given
 import org.springframework.beans.factory.annotation.Autowired
@@ -32,7 +36,8 @@ import org.springframework.test.web.servlet.MockMvc
     secure = true
 )
 class NexusWebhookControllerTest(
-    @Autowired private val mockMvc: MockMvc
+    @Autowired private val mockMvc: MockMvc,
+    @Autowired private val hmac:HmacUtils
 ) : ResourceLoader() {
 
     @MockBean
@@ -54,6 +59,9 @@ class NexusWebhookControllerTest(
     @Test
     fun `post valid event to global nexus hook`() {
 
+        val body = loadJsonResource<JsonNode>("globalNexus.json", "events")
+        val expectedHmac=hmac.hmacHex(jacksonObjectMapper().writeValueAsBytes(body))
+
         given(
             service.findAffectedImageStreamResource(any())
         ).withContractResponse("nexus/imageStreamList") {
@@ -69,8 +77,8 @@ class NexusWebhookControllerTest(
         mockMvc.post(
             path = Path("/nexus/global"),
             headers = HttpHeaders().contentTypeJson()
-                .header(NEXUS_SECURITY_HEADER, "0385d9e7e3320bfe348d7e53a6123e1a8c9e2324"),
-            body = loadJsonResource<JsonNode>("globalNexus.json", "events")
+                .header(NEXUS_SECURITY_HEADER, expectedHmac),
+            body = body
         ) {
             statusIsOk()
         }
