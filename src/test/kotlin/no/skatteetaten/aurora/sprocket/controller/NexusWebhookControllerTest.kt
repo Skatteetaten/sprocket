@@ -11,12 +11,10 @@ import no.skatteetaten.aurora.mockmvc.extensions.post
 import no.skatteetaten.aurora.mockmvc.extensions.status
 import no.skatteetaten.aurora.mockmvc.extensions.statusIsOk
 import no.skatteetaten.aurora.sprocket.ApplicationConfig
-import no.skatteetaten.aurora.sprocket.jsonMapper
 import no.skatteetaten.aurora.sprocket.security.NEXUS_SECURITY_HEADER
 import no.skatteetaten.aurora.sprocket.service.ImageChangeEventService
 import no.skatteetaten.aurora.sprocket.service.OpenShiftService
 import no.skatteetaten.aurora.sprocket.utils.ResourceLoader
-import org.apache.commons.codec.digest.HmacAlgorithms
 import org.apache.commons.codec.digest.HmacUtils
 import org.junit.jupiter.api.Test
 import org.mockito.BDDMockito.given
@@ -37,7 +35,7 @@ import org.springframework.test.web.servlet.MockMvc
 )
 class NexusWebhookControllerTest(
     @Autowired private val mockMvc: MockMvc,
-    @Autowired private val hmac:HmacUtils
+    @Autowired private val hmac: HmacUtils
 ) : ResourceLoader() {
 
     @MockBean
@@ -60,7 +58,7 @@ class NexusWebhookControllerTest(
     fun `post valid event to global nexus hook`() {
 
         val body = loadJsonResource<JsonNode>("globalNexus.json", "events")
-        val expectedHmac=hmac.hmacHex(jacksonObjectMapper().writeValueAsBytes(body))
+        val expectedHmac = hmac.hmacHex(jacksonObjectMapper().writeValueAsBytes(body))
 
         given(
             service.findAffectedImageStreamResource(any())
