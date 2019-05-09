@@ -20,11 +20,14 @@ class NexusWebhookController(
 
     /*
       This is very MVP, How do we handle robustnes and scale here?
+      We need to broadcast this ImageChangeEvent to all sprockets from this sprocket. So there needs to be some async flow in here.
      */
     @PostMapping("/global")
     fun globalEvent(@RequestBody jsonPayload: JsonNode) {
 
         val imageChangeEvent = imageChangeEventService.fromGlobalNexus(jsonPayload) ?: return
+        logger.info("Event=$imageChangeEvent")
+        // TODO: Here we need to somehow broadcast this signal to a list of sprockets in other clusters.
 
         openshiftService.findAffectedImageStreamResource(imageChangeEvent).map {
             openshiftService.importImage(imageChangeEvent, it)

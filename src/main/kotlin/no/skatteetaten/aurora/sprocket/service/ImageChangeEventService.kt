@@ -26,7 +26,7 @@ class ImageChangeEventService {
             return null
         }
         logger.debug("Payload=$globalEventPayload")
-        val imageInfo = globalEventPayload.audit.attributes ?: return null
+        val imageInfo = globalEventPayload.audit.attributes
         return imageInfo.toChangeEvent()
     }
 }

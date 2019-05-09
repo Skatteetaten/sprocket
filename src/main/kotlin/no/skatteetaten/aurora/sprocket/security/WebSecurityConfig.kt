@@ -44,7 +44,7 @@ class NexusWebhookSignatureFilter(private val hmacUtils: HmacUtils) : OncePerReq
     ) {
         val signature = request.getHeader(NEXUS_SECURITY_HEADER)
         if (signature == null) {
-            logger.debug("signature missing, we do not run this filter")
+            //logger.debug("signature missing, we do not run this filter ${request.requestURI}")
             filterChain.doFilter(request, response)
             return
         }
