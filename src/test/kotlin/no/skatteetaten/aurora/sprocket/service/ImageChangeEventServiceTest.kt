@@ -18,17 +18,23 @@ class ImageChangeEventServiceTest : ResourceLoader() {
         assertThat(event?.name).isEqualTo("no_skatteetaten_aurora/test")
         assertThat(event?.tag).isEqualTo("1")
     }
+    @Test
+    fun `should parse global snapshot event`() {
+        val event = service.fromGlobalNexus(loadJsonResource("globalNexusSnapshot.json", "events"))
+        assertThat(event?.name).isEqualTo("no_skatteetaten_aurora/test")
+        assertThat(event?.tag).isEqualTo("nexus-SNAPSHOT")
+    }
 
     @Test
-    fun `should parse global component event with version present`() {
+    fun `should parse global asset event with version present`() {
         val event = service.fromGlobalNexus(loadJsonResource("globalNexusNew.json", "events"))
         assertThat(event?.name).isEqualTo("sprocket-test/alpine-test2")
         assertThat(event?.tag).isEqualTo("0.2")
     }
 
     @Test
-    fun `should ignore asset events`() {
-        val event = service.fromGlobalNexus(loadJsonResource("globalNexusAsset.json", "events"))
+    fun `should ignore component events`() {
+        val event = service.fromGlobalNexus(loadJsonResource("globalNexusComponent.json", "events"))
         assertThat(event).isNull()
     }
 
@@ -39,7 +45,7 @@ class ImageChangeEventServiceTest : ResourceLoader() {
                 """
             {
              "audit": {
-               "domain": "repository.component"
+               "domain": "repository.asset"
               },
               "foo" : "bar"
             }

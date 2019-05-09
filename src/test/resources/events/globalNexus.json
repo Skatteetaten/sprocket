@@ -2,7 +2,7 @@
   "nodeId": "nodeid",
   "initiator": "user/ip",
   "audit": {
-    "domain": "repository.component",
+    "domain": "repository.asset",
     "type": "created",
     "context": "v2/no_skatteetaten_aurora/test/manifests/1",
     "attributes": {

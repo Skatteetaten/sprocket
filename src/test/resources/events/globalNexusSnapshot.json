@@ -1,0 +1,14 @@
+{
+  "nodeId": "87195F54-0A8D5455-B0749167-0C6F8C2A-0DA78898",
+  "initiator": "builder-demo-nexus/10.209.1.74",
+  "audit": {
+    "domain": "repository.asset",
+    "type": "updated",
+    "context": "v2/no_skatteetaten_aurora/test/manifests/nexus-SNAPSHOT",
+    "attributes": {
+      "repository.name": "internal-hosted-snapshot",
+      "format": "docker",
+      "name": "v2/no_skatteetaten_aurora/test/manifests/nexus-SNAPSHOT"
+    }
+  }
+}

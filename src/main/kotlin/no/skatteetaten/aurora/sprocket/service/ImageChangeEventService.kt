@@ -15,7 +15,7 @@ private val logger = KotlinLogging.logger {}
 class ImageChangeEventService {
     fun fromGlobalNexus(jsonPayload: JsonNode): ImageChangeEvent? {
         logger.debug("Payload=$jsonPayload")
-        if (jsonPayload.at("/audit/domain").textValue() != "repository.component") {
+        if (jsonPayload.at("/audit/domain").textValue() != "repository.asset") {
             return null
         }
 
