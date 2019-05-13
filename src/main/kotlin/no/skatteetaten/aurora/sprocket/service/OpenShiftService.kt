@@ -17,12 +17,20 @@ import no.skatteetaten.aurora.sprocket.service.ImageStreamImportGenerator.create
 import okhttp3.MediaType
 import okhttp3.Request
 import okhttp3.RequestBody
+import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
 
 private val logger = KotlinLogging.logger {}
 
 @Service
 class OpenShiftService(val client: DefaultOpenShiftClient) {
+
+    @Async
+    fun findAndImportAffectedImages(imageChangeEvent: ImageChangeEvent) {
+        findAffectedImageStreamResource(imageChangeEvent).map {
+            importImage(imageChangeEvent, it)
+        }
+    }
 
     fun findAffectedImageStreamResource(event: ImageChangeEvent): List<ImageStream> {
 

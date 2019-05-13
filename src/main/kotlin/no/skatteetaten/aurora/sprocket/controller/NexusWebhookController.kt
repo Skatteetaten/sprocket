@@ -27,8 +27,7 @@ class NexusWebhookController(
         val imageChangeEvent = imageChangeEventService.fromGlobalNexus(jsonPayload) ?: return
         logger.info("globalEvent=${imageChangeEvent.name}/${imageChangeEvent.tag}")
 
-        openshiftService.findAffectedImageStreamResource(imageChangeEvent).map {
-            openshiftService.importImage(imageChangeEvent, it)
-        }
+        openshiftService.findAndImportAffectedImages(imageChangeEvent)
     }
+
 }
