@@ -20,7 +20,9 @@ class NexusWebhookController(
 
     @PostMapping("/repository")
     fun repoEvent(@RequestBody jsonPayload: JsonNode) {
-        logger.debug("repoPayload=$jsonPayload")
+        val imageChangeEvent = imageChangeEventService.fromRepoEvent(jsonPayload) ?: return
+
+        logger.info("repoEvent=${imageChangeEvent.name}/${imageChangeEvent.tag}")
     }
 
     /*
@@ -31,8 +33,7 @@ class NexusWebhookController(
     fun globalEvent(@RequestBody jsonPayload: JsonNode) {
 
         val imageChangeEvent = imageChangeEventService.fromGlobalNexus(jsonPayload) ?: return
-        logger.info("Event=$imageChangeEvent")
-        // TODO: Here we need to somehow broadcast this signal to a list of sprockets in other clusters.
+        logger.info("globalEvent=${imageChangeEvent.name}/${imageChangeEvent.tag}")
 
         openshiftService.findAffectedImageStreamResource(imageChangeEvent).map {
             openshiftService.importImage(imageChangeEvent, it)

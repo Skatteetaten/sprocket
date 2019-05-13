@@ -29,6 +29,36 @@ class ImageChangeEventService {
         val imageInfo = globalEventPayload.audit.attributes
         return imageInfo.toChangeEvent()
     }
+
+    fun fromRepoEvent(jsonPayload: JsonNode): ImageChangeEvent? {
+        logger.debug("repoPayload=$jsonPayload")
+        val event = try {
+            jacksonObjectMapper().convertValue<RepoEventPayload>(jsonPayload)
+        } catch (e: Exception) {
+            logger.debug("Failed marshalling payload content into RepoEventPayload message=${e.message}", e)
+            return null
+        }
+        logger.debug("ParsedRepo=$event")
+        return event.toChangeEvent()
+    }
+}
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+data class RepoEventPayload(
+    val action: String,
+    val repositoryName: String,
+    val asset: ImageInfo? = null,
+    val component: ImageInfo? = null
+) {
+    fun toChangeEvent(): ImageChangeEvent? {
+        return if ("CREATED" == action && asset != null) {
+            asset.toChangeEvent()
+        } else if ("UPDATED" == action && component != null) {
+            component.toChangeEvent()
+        } else {
+            null
+        }
+    }
 }
 
 @JsonIgnoreProperties(ignoreUnknown = true)
