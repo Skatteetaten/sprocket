@@ -18,6 +18,12 @@ class NexusWebhookController(
     val imageChangeEventService: ImageChangeEventService
 ) {
 
+
+    @PostMapping("/repository")
+    fun repoEvent(@RequestBody jsonPayload: JsonNode){
+        logger.debug("repoPayload=$jsonPayload")
+    }
+
     /*
       This is very MVP, How do we handle robustnes and scale here?
       We need to broadcast this ImageChangeEvent to all sprockets from this sprocket. So there needs to be some async flow in here.

@@ -1,0 +1,14 @@
+{
+  "nodeId": "87195F54-0A8D5455-B0749167-0C6F8C2A-0DA78898",
+  "initiator": "builder-demo-nexus/10.209.1.74",
+  "audit": {
+    "domain": "repository.asset",
+    "type": "created",
+    "context": "v2/no_skatteetaten_aurora_openshift/openshift-reference-springboot-server/manifests/SNAPSHOT-binarybuild-architect268397149-b1.18.1-wingnut11-1.3.1",
+    "attributes": {
+      "repository.name": "internal-hosted-snapshot",
+      "format": "docker",
+      "name": "v2/no_skatteetaten_aurora_openshift/openshift-reference-springboot-server/manifests/SNAPSHOT-binarybuild-architect268397149-b1.18.1-wingnut11-1.3.1"
+    }
+  }
+}
