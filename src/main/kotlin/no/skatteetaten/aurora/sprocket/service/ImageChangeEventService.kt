@@ -25,7 +25,7 @@ class ImageChangeEventService {
             logger.debug("Failed marshalling payload content into GlobalEvent message=${e.message}", e)
             return null
         }
-        logger.debug("Payload=$globalEventPayload")
+        logger.debug("Parsed=$globalEventPayload")
         val imageInfo = globalEventPayload.audit.attributes
         return imageInfo.toChangeEvent()
     }

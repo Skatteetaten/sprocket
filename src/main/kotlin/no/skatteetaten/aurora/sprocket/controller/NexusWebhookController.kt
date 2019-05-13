@@ -18,9 +18,8 @@ class NexusWebhookController(
     val imageChangeEventService: ImageChangeEventService
 ) {
 
-
     @PostMapping("/repository")
-    fun repoEvent(@RequestBody jsonPayload: JsonNode){
+    fun repoEvent(@RequestBody jsonPayload: JsonNode) {
         logger.debug("repoPayload=$jsonPayload")
     }
 
