@@ -29,5 +29,4 @@ class NexusWebhookController(
 
         openshiftService.findAndImportAffectedImages(imageChangeEvent)
     }
-
 }
