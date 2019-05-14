@@ -53,8 +53,7 @@ class NexusWebhookSignatureFilter(private val secretKey: String) : OncePerReques
         val requestWrapper = CachingRequestWrapper(request)
         val body = requestWrapper.contentAsByteArray
 
-
-        val hmacUtils=HmacUtils(HmacAlgorithms.HMAC_SHA_1, secretKey)
+        val hmacUtils = HmacUtils(HmacAlgorithms.HMAC_SHA_1, secretKey)
         val hmac = hmacUtils.hmacHex(body)
         val stringBody = body?.let { String(it) } ?: ""
         val hmac2 = hmacUtils.hmacHex(stringBody)
