@@ -53,13 +53,15 @@ class NexusWebhookSignatureFilter(private val hmacUtils: HmacUtils) : OncePerReq
 
         val hmac = hmacUtils.hmacHex(body)
 
+        val stringBody = body?.let { String(it) } ?: ""
+        val hmac2 = hmacUtils.hmacHex(stringBody)
         if (signature == hmac) {
             val authentication =
                 PreAuthenticatedAuthenticationToken("nexus", signature, listOf(SimpleGrantedAuthority(NEXUS_AUTHORITY)))
             SecurityContextHolder.getContext().authentication = authentication
         } else {
             val stringBody = body?.let { String(it) } ?: ""
-            logger.warn("signature and hmac does not match body=$stringBody signature=$signature hmac=$hmac")
+            logger.warn("signature and hmac does not match body=$stringBody signature=$signature hmac=$hmac hmac2=$hmac2")
         }
         // If signature does not match we do not have a valid user.
 

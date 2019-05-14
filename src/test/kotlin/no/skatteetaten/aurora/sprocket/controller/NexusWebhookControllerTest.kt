@@ -1,5 +1,7 @@
 package no.skatteetaten.aurora.sprocket.controller
 
+import assertk.assertThat
+import assertk.assertions.isEqualTo
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.nhaarman.mockito_kotlin.any
@@ -44,14 +46,23 @@ class NexusWebhookControllerTest(
     @Test
     fun `post event with invalid hmac should fail`() {
 
-            mockMvc.post(
-                path = Path("/nexus/global"),
-                headers = HttpHeaders().contentTypeJson()
-                    .header(NEXUS_SECURITY_HEADER, "LukeSkywalker"),
-                body = loadJsonResource<JsonNode>("globalNexus.json", "events")
-            ) {
-                status(HttpStatus.FORBIDDEN)
-            }
+        mockMvc.post(
+            path = Path("/nexus/global"),
+            headers = HttpHeaders().contentTypeJson()
+                .header(NEXUS_SECURITY_HEADER, "LukeSkywalker"),
+            body = loadJsonResource<JsonNode>("globalNexus.json", "events")
+        ) {
+            status(HttpStatus.FORBIDDEN)
+        }
+    }
+
+    @Test
+    fun `test hmac`() {
+
+        val content =
+            """{"nodeId":"601A9C7C-DB5525A1-889F9A97-14DA6363-83976FD4","initiator":"builder-aurora-build/10.209.2.52","audit":{"domain":"repository.asset","type":"updated","context":"v2/no_skatteetaten_aurora_demo/whoami/manifests/0.0.14","attributes":{"repository.name":"internal-hosted-releases","format":"docker","name":"v2/no_skatteetaten_aurora_demo/whoami/manifests/0.0.14"}}}"""
+        val hex = hmac.hmacHex(content)
+        assertThat(hex).isEqualTo("")
     }
 
     @Test
