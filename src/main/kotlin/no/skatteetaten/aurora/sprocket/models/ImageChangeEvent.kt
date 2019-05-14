@@ -6,7 +6,7 @@ data class ImageChangeEvent(
     val name: String,
     val tag: String,
     // TODO: Parameterize this
-    val repository: String = "utv-container-registry-internal-private-pull.aurora.skead.no:443"
+    val repository: String = "container-registry-internal-private-pull.aurora.skead.no:443"
 ) {
 
     val sha: String
