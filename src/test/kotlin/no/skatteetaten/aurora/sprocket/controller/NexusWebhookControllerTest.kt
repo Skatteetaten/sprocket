@@ -1,7 +1,5 @@
 package no.skatteetaten.aurora.sprocket.controller
 
-import assertk.assertThat
-import assertk.assertions.isEqualTo
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.nhaarman.mockito_kotlin.any
