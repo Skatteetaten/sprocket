@@ -1,7 +1,9 @@
 package no.skatteetaten.aurora.sprocket.security
 
 import no.skatteetaten.aurora.io.CachingRequestWrapper
+import org.apache.commons.codec.digest.HmacAlgorithms
 import org.apache.commons.codec.digest.HmacUtils
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter
@@ -20,7 +22,7 @@ val NEXUS_AUTHORITY = "NEXUS"
 // https://github.com/kpavlov/spring-hmac-rest/blob/master/src/main/java/com/github/kpavlov/restws/server/hmac/HmacAuthenticationFilter.java
 @EnableWebSecurity
 class WebSecurityConfig(
-    val hmacUtils: HmacUtils
+    @Value("\${sprocket.nexus.secret:123456}") val secretKey: String
 ) : WebSecurityConfigurerAdapter() {
 
     override fun configure(http: HttpSecurity) {
@@ -28,14 +30,14 @@ class WebSecurityConfig(
         http.csrf().disable()
 
         http
-            .addFilterBefore(NexusWebhookSignatureFilter(hmacUtils), UsernamePasswordAuthenticationFilter::class.java)
+            .addFilterBefore(NexusWebhookSignatureFilter(secretKey), UsernamePasswordAuthenticationFilter::class.java)
             .authorizeRequests()
             .antMatchers("/nexus/**").hasAuthority(NEXUS_AUTHORITY)
             .anyRequest().permitAll()
     }
 }
 
-class NexusWebhookSignatureFilter(private val hmacUtils: HmacUtils) : OncePerRequestFilter() {
+class NexusWebhookSignatureFilter(private val secretKey: String) : OncePerRequestFilter() {
 
     override fun doFilterInternal(
         request: HttpServletRequest,
@@ -51,8 +53,9 @@ class NexusWebhookSignatureFilter(private val hmacUtils: HmacUtils) : OncePerReq
         val requestWrapper = CachingRequestWrapper(request)
         val body = requestWrapper.contentAsByteArray
 
-        val hmac = hmacUtils.hmacHex(body)
 
+        val hmacUtils=HmacUtils(HmacAlgorithms.HMAC_SHA_1, secretKey)
+        val hmac = hmacUtils.hmacHex(body)
         val stringBody = body?.let { String(it) } ?: ""
         val hmac2 = hmacUtils.hmacHex(stringBody)
         if (signature == hmac) {

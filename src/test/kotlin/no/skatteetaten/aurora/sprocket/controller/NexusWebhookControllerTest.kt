@@ -15,6 +15,7 @@ import no.skatteetaten.aurora.sprocket.security.NEXUS_SECURITY_HEADER
 import no.skatteetaten.aurora.sprocket.service.ImageChangeEventService
 import no.skatteetaten.aurora.sprocket.service.OpenShiftService
 import no.skatteetaten.aurora.sprocket.utils.ResourceLoader
+import org.apache.commons.codec.digest.HmacAlgorithms
 import org.apache.commons.codec.digest.HmacUtils
 import org.junit.jupiter.api.Test
 import org.mockito.BDDMockito.given
@@ -34,10 +35,10 @@ import org.springframework.test.web.servlet.MockMvc
     secure = true
 )
 class NexusWebhookControllerTest(
-    @Autowired private val mockMvc: MockMvc,
-    @Autowired private val hmac: HmacUtils
+    @Autowired private val mockMvc: MockMvc
 ) : ResourceLoader() {
 
+    val hmac = HmacUtils(HmacAlgorithms.HMAC_SHA_1, "123456")
     @MockBean
     private lateinit var service: OpenShiftService
 
