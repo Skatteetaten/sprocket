@@ -44,7 +44,7 @@ class OpenShiftService(
 
         return client.imageStreams().inAnyNamespace().withLabel("skatteetaten.no/sprocket", sha).list()
             .items.also {
-            logger.debug("Found items={} imagestreams", it.count())
+            logger.info("Found items={} imagestreams", it.count())
         }
     }
 
@@ -57,11 +57,10 @@ class OpenShiftService(
             dockerImageUrl = url,
             imageStreamName = imageStream.metadata.name,
             isiNamespace = imageStream.metadata.namespace,
-            // TODO: Parameterize
             tag = "default"
         )
 
-        logger.debug("Importing image with spec=$import")
+        logger.info("Importing image with app=${import.metadata.namespace}/${import.metadata.name} url=$url")
         return client.importImage(import)
     }
 }
