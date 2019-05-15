@@ -6,7 +6,6 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.module.kotlin.convertValue
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import mu.KotlinLogging
-import no.skatteetaten.aurora.sprocket.models.ImageChangeEvent
 import org.springframework.stereotype.Service
 
 private val logger = KotlinLogging.logger {}
@@ -26,38 +25,58 @@ class ImageChangeEventService {
             return null
         }
         logger.debug("Parsed=$globalEventPayload")
+        val initiator = globalEventPayload.initiator.split("/").first()
+
         val imageInfo = globalEventPayload.audit.attributes
-        return imageInfo.toChangeEvent()
+        if (imageInfo.repository.contains("proxy")) {
+            return null
+        }
+
+        if (imageInfo.name.contains("sha256")) {
+            return null
+        }
+
+        if (imageInfo.version != null) {
+            return ImageChangeEvent(
+                name = imageInfo.name,
+                tag = imageInfo.version,
+                pushRepository = imageInfo.repository,
+                initiator = initiator
+            )
+        }
+
+        val (group, name, version) = imageInfo.name
+            .removePrefix("v2/")
+            .replace("/manifests", "")
+            .split("/", limit = 3)
+
+        return ImageChangeEvent(
+            name = "$group/$name", tag = version,
+            pushRepository = imageInfo.repository,
+            initiator = initiator
+        )
     }
 }
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-data class GlobalEventPayload(val audit: DockerAuditEvent)
+data class GlobalEventPayload(
+    val audit: DockerAuditEvent,
+    val initiator: String
+)
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class DockerAuditEvent(val attributes: ImageInfo)
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class ImageInfo(
-    val name: String?,
+    val name: String,
     val version: String?,
-    @JsonProperty("repository.name") val repository: String?
+    @JsonProperty("repository.name") val repository: String
 )
 
-fun ImageInfo.toChangeEvent(): ImageChangeEvent? {
-    // TODO: Is this dead code? Not tested for now, want to investigate
-    if (this.name == null || this.name.contains("sha256")) {
-        return null
-    }
-
-    if (this.version != null) {
-        return ImageChangeEvent(this.name, this.version)
-    }
-
-    val (group, name, version) = this.name
-        .removePrefix("v2/")
-        .replace("/manifests", "")
-        .split("/", limit = 3)
-
-    return ImageChangeEvent("$group/$name", version)
-}
+data class ImageChangeEvent(
+    val name: String,
+    val tag: String,
+    val pushRepository: String,
+    val initiator: String
+)
