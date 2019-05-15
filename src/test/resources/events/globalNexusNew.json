@@ -1,0 +1,15 @@
+{
+  "nodeId": "nodeid",
+  "initiator": "user/ip",
+  "audit": {
+    "domain": "repository.asset",
+    "type": "created",
+    "context": "sprocket-test/alpine-test2",
+    "attributes": {
+      "repository.name": "internal-hosted-binary",
+      "format": "docker",
+      "name": "sprocket-test/alpine-test2",
+      "version": "0.2"
+    }
+  }
+}

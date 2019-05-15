@@ -1,25 +1,27 @@
 package no.skatteetaten.aurora.sprocket.security
 
-import mu.KotlinLogging
+import no.skatteetaten.aurora.io.CachingRequestWrapper
 import org.apache.commons.codec.digest.HmacAlgorithms
 import org.apache.commons.codec.digest.HmacUtils
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter
+import org.springframework.security.core.authority.SimpleGrantedAuthority
+import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
-import org.springframework.security.web.util.matcher.RequestMatcher
+import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken
 import org.springframework.web.filter.OncePerRequestFilter
-import org.springframework.web.util.ContentCachingRequestWrapper
 import javax.servlet.FilterChain
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
-private val logger = KotlinLogging.logger {}
+val NEXUS_SECURITY_HEADER = "x-nexus-webhook-signature"
+val NEXUS_AUTHORITY = "NEXUS"
 
+// https://github.com/kpavlov/spring-hmac-rest/blob/master/src/main/java/com/github/kpavlov/restws/server/hmac/HmacAuthenticationFilter.java
 @EnableWebSecurity
 class WebSecurityConfig(
-    @Value("\${management.server.port}") val managementPort: Int,
     @Value("\${sprocket.nexus.secret:123456}") val secretKey: String
 ) : WebSecurityConfigurerAdapter() {
 
@@ -28,35 +30,42 @@ class WebSecurityConfig(
         http.csrf().disable()
 
         http
-            .addFilterBefore(SignatureHeaderFilter(secretKey), UsernamePasswordAuthenticationFilter::class.java)
+            .addFilterBefore(NexusWebhookSignatureFilter(secretKey), UsernamePasswordAuthenticationFilter::class.java)
             .authorizeRequests()
-            .requestMatchers(forPort(managementPort)).permitAll()
+            .antMatchers("/nexus/**").hasAuthority(NEXUS_AUTHORITY)
+            .anyRequest().permitAll()
     }
-
-    private fun forPort(port: Int) = RequestMatcher { request: HttpServletRequest -> port == request.localPort }
 }
 
-class SignatureHeaderFilter(val secretKey: String) : OncePerRequestFilter() {
+class NexusWebhookSignatureFilter(private val secretKey: String) : OncePerRequestFilter() {
 
     override fun doFilterInternal(
         request: HttpServletRequest,
         response: HttpServletResponse,
         filterChain: FilterChain
     ) {
-        val signature = request.getHeader("x-nexus-webhook-signature") ?: return
+        val signature = request.getHeader(NEXUS_SECURITY_HEADER)
+        if (signature == null) {
+            // logger.debug("signature missing, we do not run this filter ${request.requestURI}")
+            filterChain.doFilter(request, response)
+            return
+        }
+        val requestWrapper = CachingRequestWrapper(request)
+        val body = requestWrapper.contentAsByteArray
 
-        val requestWrapper = ContentCachingRequestWrapper(request)
+        val hmacUtils = HmacUtils(HmacAlgorithms.HMAC_SHA_1, secretKey)
+        val hmac = hmacUtils.hmacHex(body)
+        if (signature == hmac) {
+            val authentication =
+                PreAuthenticatedAuthenticationToken("nexus", signature, listOf(SimpleGrantedAuthority(NEXUS_AUTHORITY)))
+            SecurityContextHolder.getContext().authentication = authentication
+        }
+        // If signature does not match we do not have a valid user.
+
         try {
             filterChain.doFilter(requestWrapper, response)
         } finally {
-            val body = requestWrapper.inputStream
-
-            val hmac = HmacUtils(HmacAlgorithms.HMAC_SHA_1, secretKey).hmacHex(body)
-
-            if (signature != hmac) {
-                response.sendError(403, "Forbidden operation. HMAC mismatch")
-                return
-            }
+            SecurityContextHolder.clearContext()
         }
     }
 }
