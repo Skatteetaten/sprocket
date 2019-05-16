@@ -1,0 +1,14 @@
+{
+  "nodeId": "601A9C7C-DB5525A1-889F9A97-14DA6363-83976FD4",
+  "initiator": "anonymous/10.209.1.250",
+  "audit": {
+    "domain": "repository.asset",
+    "type": "updated",
+    "context": "v2/no_skatteetaten_aurora_demo/whoami/manifests/2.2",
+    "attributes": {
+      "repository.name": "proxy-docker-aurora-sits",
+      "format": "docker",
+      "name": "v2/no_skatteetaten_aurora_demo/whoami/manifests/2.2"
+    }
+  }
+}

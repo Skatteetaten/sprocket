@@ -33,6 +33,12 @@ class ImageChangeEventServiceTest : ResourceLoader() {
     }
 
     @Test
+    fun `should ignore events that are not to a hosted repo`() {
+        val event = service.fromGlobalNexus(loadJsonResource("globalNexusProxy.json", "events"))
+        assertThat(event).isNull()
+    }
+
+    @Test
     fun `should ignore component events`() {
         val event = service.fromGlobalNexus(loadJsonResource("globalNexusComponent.json", "events"))
         assertThat(event).isNull()

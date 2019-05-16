@@ -12,46 +12,55 @@ import io.fabric8.openshift.api.model.ImageStreamImport
 import io.fabric8.openshift.client.DefaultOpenShiftClient
 import mu.KotlinLogging
 import no.skatteetaten.aurora.sprocket.jsonMapper
-import no.skatteetaten.aurora.sprocket.models.ImageChangeEvent
 import no.skatteetaten.aurora.sprocket.service.ImageStreamImportGenerator.create
 import okhttp3.MediaType
 import okhttp3.Request
 import okhttp3.RequestBody
+import org.apache.commons.codec.digest.DigestUtils
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
 
 private val logger = KotlinLogging.logger {}
 
 @Service
-class OpenShiftService(val client: DefaultOpenShiftClient) {
+class OpenShiftService(
+    val client: DefaultOpenShiftClient,
+    @Value("\${sprocket.docker.pull:container-registry-internal-private-pull.aurora.skead.no:443}") val pullUrl: String
+) {
 
     @Async
-    fun findAndImportAffectedImages(imageChangeEvent: ImageChangeEvent) {
-        findAffectedImageStreamResource(imageChangeEvent).map {
-            importImage(imageChangeEvent, it)
+    fun findAndImportAffectedImages(event: ImageChangeEvent) {
+        val url = "$pullUrl/${event.name}:${event.tag}"
+        val sha = "sha1-${DigestUtils.sha1Hex(url)}"
+
+        logger.debug("Searching for imagestreams with sprocket=$sha url=$url")
+        findAffectedImageStreamResource(sha).map {
+            importImage(it, url)
         }
     }
 
-    fun findAffectedImageStreamResource(event: ImageChangeEvent): List<ImageStream> {
+    fun findAffectedImageStreamResource(sha: String): List<ImageStream> {
 
-        logger.debug("Searching for imagestreams with sprocket=${event.sha} url=${event.url}")
-        return client.imageStreams().inAnyNamespace().withLabel("skatteetaten.no/sprocket", event.sha).list()
+        return client.imageStreams().inAnyNamespace().withLabel("skatteetaten.no/sprocket", sha).list()
             .items.also {
-            logger.debug("Found items={} imagestreams", it.count())
+            logger.info("Found items={} imagestreams", it.count())
         }
     }
 
-    fun importImage(event: ImageChangeEvent, imageStream: ImageStream): ImageStreamImport {
+    fun importImage(
+        imageStream: ImageStream,
+        url: String
+    ): ImageStreamImport {
 
         val import = create(
-            dockerImageUrl = event.url,
+            dockerImageUrl = url,
             imageStreamName = imageStream.metadata.name,
             isiNamespace = imageStream.metadata.namespace,
-            // TODO: Parameterize
             tag = "default"
         )
 
-        logger.debug("Importing image with spec=$import")
+        logger.info("Importing image with app=${import.metadata.namespace}/${import.metadata.name} url=$url")
         return client.importImage(import)
     }
 }
