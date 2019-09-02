@@ -46,8 +46,8 @@ class OpenShiftServiceTest : ResourceLoader() {
 
         val response = MockResponse().setJsonFileAsBody("openshift/import.json")
         val requests = server.execute(response) {
-            val response = service.importImage(imageStream, url)
-            assertThat(response).isNotNull()
+            val importResponse = service.importImage(imageStream, url)
+            assertThat(importResponse).isNotNull()
         }
         assertThat(requests.size).isEqualTo(1)
 
