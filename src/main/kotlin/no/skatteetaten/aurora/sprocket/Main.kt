@@ -1,5 +1,6 @@
 package no.skatteetaten.aurora.sprocket
 
+import io.fabric8.kubernetes.client.DefaultKubernetesClient
 import io.fabric8.openshift.client.DefaultOpenShiftClient
 import org.apache.commons.codec.digest.HmacAlgorithms
 import org.apache.commons.codec.digest.HmacUtils

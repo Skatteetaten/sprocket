@@ -6,6 +6,8 @@ import com.fkorotkov.openshift.newImageImportSpec
 import com.fkorotkov.openshift.newImageStreamImport
 import com.fkorotkov.openshift.spec
 import com.fkorotkov.openshift.to
+import io.fabric8.kubernetes.api.model.apps.Deployment
+import io.fabric8.kubernetes.client.DefaultKubernetesClient
 import io.fabric8.kubernetes.client.KubernetesClientException
 import io.fabric8.openshift.api.model.ImageStream
 import io.fabric8.openshift.api.model.ImageStreamImport
@@ -38,6 +40,9 @@ class OpenShiftService(
         findAffectedImageStreamResource(sha).map {
             importImage(it, url)
         }
+        /*findAffectedDeployments(sha).map {
+            patchDeployment(it, url)
+        }*/
     }
 
     fun findAffectedImageStreamResource(sha: String): List<ImageStream> {
@@ -48,6 +53,22 @@ class OpenShiftService(
         }
     }
 
+    /*
+    fun patchDeployment(deployment:Deployment, url:String): Boolean {
+        deployment.metadata.labels.put("updatedAt", )
+        return client.apps().deployments()
+            .inNamespace(deployment.metadata.namespace)
+            .withName(deployment.metadata.name)
+            .buildMetadata().labels
+    }
+    fun findAffectedDeployments(sha: String): List<Deployment> {
+        return client.apps().deployments().inAnyNamespace().withLabel("skatteetaten.no/sprocket", sha).list()
+            .items.also {
+            logger.info("Found items={} deployment", it.count())
+        }
+    }
+
+    */
     fun importImage(
         imageStream: ImageStream,
         url: String
