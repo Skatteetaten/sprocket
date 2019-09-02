@@ -34,7 +34,7 @@ class OpenShiftService(
         val url = "$pullUrl/${event.name}:${event.tag}"
         val sha = "sha1-${DigestUtils.sha1Hex(url)}"
 
-        logger.debug("Searching for imagestreams with sprocket=$sha url=$url")
+        logger.info("Searching for resources with sprocket=$sha url=$url")
         findAffectedImageStreamResource(sha).map {
             importImage(it, url)
         }
@@ -59,6 +59,7 @@ class OpenShiftService(
             .withName(deployment.metadata.name)
             .buildMetadata().labels
     }
+
     fun findAffectedDeployments(sha: String): List<Deployment> {
         return client.apps().deployments().inAnyNamespace().withLabel("skatteetaten.no/sprocket", sha).list()
             .items.also {

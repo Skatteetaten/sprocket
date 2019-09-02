@@ -45,3 +45,9 @@ label har lengde begrensning 64 tegn.
 Algortime som tar docker url -> 64 tegn. 
 
 sha1 fungerer sha256 blir for langt
+
+## How to label resources from CLI
+
+For imageStreams
+oc label is whoami skatteetaten.no/sprocket=sha1-$(oc get is whoami -o json | jq -j ".spec.tags[].from.name" | sha1sum | cut -d' ' -f1) --overwrite
+
