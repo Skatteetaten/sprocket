@@ -36,18 +36,17 @@ SPROCKET_RESOURCES=ImageStreams
 
 
 
-TODO: Hvordan ser en event fra Dokcer Registry ut.
+## The sprocket label
 
-Hvilken algoritme skal vi hashe med
+The sprocket label is on the form
+skatteetaten.no/sprocket=sha1-<sha1hex of docker.registry/group/name:tag>
 
-label har lengde begrensning 64 tegn.
+If you try to set this via echo remember to strip newlines and if you use jq use the -j switch.
 
-Algortime som tar docker url -> 64 tegn. 
+Examples for how to label from some resources below
+    
+### imageStreams
+oc label is $1 skatteetaten.no/sprocket=sha1-$(oc get is $1 -o json | jq -j ".spec.tags[].from.name" | sha1sum | cut -d' ' -f1) --overwrite
 
-sha1 fungerer sha256 blir for langt
-
-## How to label resources from CLI
-
-For imageStreams
-oc label is whoami skatteetaten.no/sprocket=sha1-$(oc get is whoami -o json | jq -j ".spec.tags[].from.name" | sha1sum | cut -d' ' -f1) --overwrite
-
+### Deployments
+kubectl label deployment $1 skatteetaten.no/sprocket=sha1-$(kubectl get deployment $1 -o json | jq -j ".spec.template.spec.containers[].image" | sha1sum | cut -d' ' -f1) --overwrite

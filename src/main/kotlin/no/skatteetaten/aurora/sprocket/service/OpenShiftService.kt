@@ -35,7 +35,9 @@ class OpenShiftService(
         val sha = "sha1-${DigestUtils.sha1Hex(url)}"
 
         logger.info("Searching for resources with sprocket=$sha url=$url")
-        findAffectedImageStreamResource(sha).map {
+        val affectedImages = findAffectedImageStreamResource(sha)
+
+        affectedImages.map {
             importImage(it, url)
         }
         /*findAffectedDeployments(sha).map {
@@ -43,13 +45,8 @@ class OpenShiftService(
         }*/
     }
 
-    fun findAffectedImageStreamResource(sha: String): List<ImageStream> {
-
-        return client.imageStreams().inAnyNamespace().withLabel("skatteetaten.no/sprocket", sha).list()
-            .items.also {
-            logger.info("Found items={} imagestreams", it.count())
-        }
-    }
+    fun findAffectedImageStreamResource(sha: String): List<ImageStream> =
+        client.imageStreams().inAnyNamespace().withLabel("skatteetaten.no/sprocket", sha).list().items
 
     /*
     fun patchDeployment(deployment:Deployment, url:String): Boolean {
